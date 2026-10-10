@@ -1,0 +1,15 @@
+services:
+  play-ps2:
+    image: vezpec/play-ps2:local
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8789:80"
+    networks:
+      - vezpec
+
+networks:
+  vezpec:
+    external: true

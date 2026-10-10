@@ -1,0 +1,21 @@
+FROM emscripten/emsdk:4.0.1 AS wasm
+RUN python3 -m pip install --no-cache-dir cmake==3.31.6 ninja==1.11.1.4
+WORKDIR /src
+COPY . .
+RUN emcmake cmake --preset wasm-ninja && \
+    cmake --build --preset wasm-ninja-release --target Play --parallel 2
+
+FROM node:20.17-bookworm-slim AS frontend
+WORKDIR /app
+COPY js/play_browser/package.json js/play_browser/package-lock.json ./
+RUN npm ci
+COPY js/play_browser/ ./
+COPY --from=wasm /src/build_cmake/build/wasm-ninja/Source/ui_js/Release/Play.js ./src/Play.js
+COPY --from=wasm /src/build_cmake/build/wasm-ninja/Source/ui_js/Release/Play.js ./public/Play.js
+COPY --from=wasm /src/build_cmake/build/wasm-ninja/Source/ui_js/Release/Play.wasm ./public/Play.wasm
+RUN npm run build
+
+FROM nginx:alpine
+COPY deploy/nginx-web.conf /etc/nginx/conf.d/default.conf
+COPY --from=frontend /app/build /usr/share/nginx/html
+EXPOSE 80

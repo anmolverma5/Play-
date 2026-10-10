@@ -1,0 +1,6 @@
+.git
+build_cmake/build
+js/play_browser/node_modules
+js/play_browser/build
+js/psfplayer_browser/node_modules
+js/psfplayer_browser/build
